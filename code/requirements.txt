@@ -1,0 +1,62 @@
+# =============================================================================
+# autodl-tmp — Python 依赖与环境说明（Cosmos-Predict2.5 + 本仓库脚本）
+# =============================================================================
+#
+# 【推荐】不要在仓库根目录直接 `pip install -r requirements.txt` 当作唯一步骤。
+# 完整训练/推理依赖由 NVIDIA Cosmos 的 workspace 包（cosmos-oss、cosmos-cuda 等）
+# 解析；请优先在子目录按官方方式安装，再激活该环境的 Python。
+#
+# -----------------------------------------------------------------------------
+# 1. 硬件与系统
+# -----------------------------------------------------------------------------
+# - 操作系统：Linux（项目 pyproject 标注为 POSIX Linux；Windows 未作为一等目标）。
+# - GPU：NVIDIA，显存需满足 Video2World / 双流实验配置（具体见 PIPELINE_GUIDE.md）。
+# - 驱动：需与所选 CUDA 栈兼容（见下节 PyTorch extra）。
+# - 可选：系统级 ffmpeg（用于部分视频读写；imageio[ffmpeg] 也会拉取相关能力）。
+#
+# -----------------------------------------------------------------------------
+# 2. Python 版本
+# -----------------------------------------------------------------------------
+# - requires-python: >=3.10（见 cosmos-predict2.5-1.5.0/pyproject.toml）。
+# - 建议使用与官方容器/文档一致的 3.10，以减少二进制 wheel 不匹配。
+#
+# -----------------------------------------------------------------------------
+# 3. CUDA / PyTorch 选型（与 cosmos-oss optional-dependencies 对应）
+# -----------------------------------------------------------------------------
+# 在 cosmos-predict2.5-1.5.0 目录内，二者选一（不要混装）：
+#
+#   CUDA 12.8 + PyTorch 2.7 线（extra 名：cu128）：
+#     uv sync --extra cu128
+#     或：pip install -e ".[cu128]"
+#
+#   CUDA 13.0 + PyTorch 2.9 线（extra 名：cu130）：
+#     uv sync --extra cu130
+#     或：pip install -e ".[cu130]"
+#
+# flash-attn、natten、transformer-engine、xformers 等由对应 extra 引入；
+# 若 pip 单独安装失败，请用项目配置的 NVIDIA/Cosmos 依赖索引（见
+# packages/cosmos-oss/pyproject.toml 中 [[tool.uv.index]]），或参考官方 README。
+#
+# numpy：工作区 override 为 numpy>=2.0.0（与旧子项目 cosmos_dual_stream 里
+# numpy<2 的约束冲突；本流水线以 cosmos-predict2.5-1.5.0 为准）。
+#
+# -----------------------------------------------------------------------------
+# 4. 推荐安装步骤（从源码 workspace）
+# -----------------------------------------------------------------------------
+#
+#   cd /root/autodl-tmp/cosmos-predict2.5-1.5.0
+#   # 若使用 uv（pyproject 中 [tool.uv] 已配置 workspace）：
+#   uv sync --extra cu128    # 或 --extra cu130
+#   source .venv/bin/activate
+#
+# 安装完成后，`cosmos_predict2` 与 `cosmos_oss` 可在该 venv 中导入。
+#
+# -----------------------------------------------------------------------------
+# 5. 本仓库根目录脚本的路径约定
+# -----------------------------------------------------------------------------
+# - 训练代理：scripts/train.py 会将工作目录切换到 cosmos-predict2.5-1.5.0。
+# - 直接在仓库根运行 step1/step3 等脚本时，请使用已激活的 Cosmos venv 中的
+#   python，保证能 import cosmos_predict2、torch、loguru 等。
+# - 数据与输出路径见 PIPELINE_GUIDE.md（datasets/custom_lora、outputs/ 等）。
+#
+# -----------------------------------------------------------------------------
